@@ -13,15 +13,20 @@ export const useAppStore = create(
       // Auth
       usuario: null,
       comisariaSeleccionada: null,
+      comisariaSeleccionadaObj: null,  // objeto completo de la comisaría
+
+      // Datos ERP (cargados desde API)
+      comisariasUsuario: [],           // comisarías asignadas al usuario logueado
+      partidasComisaria: [],           // partidas de la comisaría seleccionada
 
       // Datos
       avances: AVANCES_INICIALES,
-      pendienteSync: [],    // avances offline pendientes de sincronizar
+      pendienteSync: [],
       isOnline: navigator.onLine,
 
       // Geolocation
       ubicacionActual: null,
-      loginUbicacion: null,   // ubicación capturada al momento del login
+      loginUbicacion: null,
 
       async login(login, password) {
         const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
@@ -49,11 +54,56 @@ export const useAppStore = create(
       },
 
       logout() {
-        set({ usuario: null, comisariaSeleccionada: null })
+        set({ usuario: null, comisariaSeleccionada: null, comisariaSeleccionadaObj: null, comisariasUsuario: [], partidasComisaria: [] })
       },
 
-      seleccionarComisaria(comisariaId) {
-        set({ comisariaSeleccionada: comisariaId })
+      async cargarComisariasUsuario() {
+        const { usuario } = get()
+        if (!usuario?.login) return
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        try {
+          // Obtener asignaciones del usuario
+          const res = await fetch(`${erpUrl}/api/v1/usuarios-obra/?login=${encodeURIComponent(usuario.login)}`)
+          if (!res.ok) return
+          const asignaciones = await res.json()
+
+          // Obtener detalle de cada comisaría
+          const ids = [...new Set(asignaciones.map(a => a.comisaria_id).filter(Boolean))]
+          const comisariasRes = await fetch(`${erpUrl}/api/v1/comisarias/`)
+          if (!comisariasRes.ok) return
+          const todasComisarias = await comisariasRes.json()
+          const misComisarias = todasComisarias.filter(c => ids.includes(c.id))
+          set({ comisariasUsuario: misComisarias })
+        } catch {
+          // offline: queda con lo que había
+        }
+      },
+
+      async cargarPartidasComisaria(comisariaId) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        try {
+          const res = await fetch(`${erpUrl}/api/v1/cronogramas/comisaria/${comisariaId}/detalle`)
+          if (!res.ok) return
+          const data = await res.json()
+          const todasPartidas = data.partidas || []
+          // Solo partidas hoja (sin hijos) = trabajo real
+          const codigoPadres = new Set(todasPartidas.map(p => p.partida_padre).filter(Boolean))
+          const partidas = todasPartidas
+            .filter(p => !codigoPadres.has(p.codigo_partida))
+            .map(p => ({
+              codigo: p.codigo_partida,
+              partida: p.descripcion,
+              unidad: p.unidad || '-',
+              metrado: p.metrado || 0,
+            }))
+          set({ partidasComisaria: partidas })
+        } catch {
+          set({ partidasComisaria: [] })
+        }
+      },
+
+      seleccionarComisaria(comisariaId, comisariaObj = null) {
+        set({ comisariaSeleccionada: comisariaId, comisariaSeleccionadaObj: comisariaObj })
       },
 
       registrarAvance({ comisariaId, codigo, porcentajeDia, observaciones, foto, lat, lng }) {
@@ -165,7 +215,8 @@ export const useAppStore = create(
       },
 
       getPartidasComisaria(comisariaId) {
-        return PARTIDAS_POR_COMISARIA[comisariaId] || []
+        const { partidasComisaria } = get()
+        return partidasComisaria.length > 0 ? partidasComisaria : (PARTIDAS_POR_COMISARIA[comisariaId] || [])
       },
 
       getAvancesPartida(comisariaId, codigo) {
@@ -179,7 +230,8 @@ export const useAppStore = create(
       },
 
       getResumenComisaria(comisariaId) {
-        const partidas = PARTIDAS_POR_COMISARIA[comisariaId] || []
+        const { partidasComisaria } = get()
+        const partidas = partidasComisaria.length > 0 ? partidasComisaria : (PARTIDAS_POR_COMISARIA[comisariaId] || [])
         const totalPartidas = partidas.length
         const completadas = partidas.filter(p => get().getAcumuladoPartida(comisariaId, p.codigo) >= 100).length
         const sinIniciar = partidas.filter(p => get().getAcumuladoPartida(comisariaId, p.codigo) === 0).length
