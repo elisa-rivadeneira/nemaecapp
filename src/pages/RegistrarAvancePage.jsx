@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
-import { COMISARIAS } from '../data/mockData'
 import GeoStatus, { calcularDistancia } from '../components/GeoStatus'
 import OfflineBanner from '../components/OfflineBanner'
 import { ArrowLeft, Camera, MapPin, CheckCircle, AlertTriangle, Info } from 'lucide-react'
@@ -11,8 +10,8 @@ export default function RegistrarAvancePage() {
   const { state } = useLocation()
   const partida = state?.partida
 
-  const { comisariaSeleccionada, usuario, registrarAvance, getAcumuladoPartida, setUbicacion, ubicacionActual } = useAppStore()
-  const comisaria = COMISARIAS.find(c => c.id === comisariaSeleccionada)
+  const { comisariaSeleccionada, comisariaSeleccionadaObj, usuario, registrarAvance, getAcumuladoPartida, setUbicacion, ubicacionActual } = useAppStore()
+  const comisaria = comisariaSeleccionadaObj
 
   const acumuladoActual = getAcumuladoPartida(comisariaSeleccionada, partida?.codigo)
   const [porcentaje, setPorcentaje] = useState('')

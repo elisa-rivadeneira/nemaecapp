@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
-import { COMISARIAS, calcularProgramadoHoy, getEstadoSemaforo } from '../data/mockData'
+import { calcularProgramadoHoy, getEstadoSemaforo } from '../data/mockData'
 import ProgressBar from '../components/ProgressBar'
 import OfflineBanner from '../components/OfflineBanner'
 import { Search, ArrowLeft, CheckCircle2, Clock, AlertTriangle, XCircle, ShieldCheck, ClipboardList } from 'lucide-react'
@@ -23,13 +23,13 @@ const ESTADO_ICON = {
 
 export default function PartidasPage() {
   const navigate = useNavigate()
-  const { comisariaSeleccionada, usuario, getPartidasComisaria, getAcumuladoPartida, getAvancesPartida } = useAppStore()
+  const { comisariaSeleccionada, comisariaSeleccionadaObj, usuario, getPartidasComisaria, getAcumuladoPartida, getAvancesPartida } = useAppStore()
   const [busqueda, setBusqueda] = useState('')
   const [filtro, setFiltro] = useState('todos')
   const [expandida, setExpandida] = useState(null)
 
   const esMonitor = !usuario?.rol || usuario?.rol === 'monitor'
-  const comisaria = COMISARIAS.find(c => c.id === comisariaSeleccionada)
+  const comisaria = comisariaSeleccionadaObj
   const partidas = getPartidasComisaria(comisariaSeleccionada)
 
   function getAvancePendienteVerificacion(codigoPartida) {
@@ -151,11 +151,11 @@ export default function PartidasPage() {
               {isOpen && (
                 <div className="border-t border-gray-100 px-4 py-3 bg-gray-50 space-y-2">
                   <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 mb-1">
-                    <div><span className="text-gray-400">Und:</span> {partida.und}</div>
-                    <div><span className="text-gray-400">Metrado:</span> {partida.metrado}</div>
-                    <div><span className="text-gray-400">Inicio:</span> {partida.inicio}</div>
-                    <div><span className="text-gray-400">Fin:</span> {partida.fin}</div>
-                    <div><span className="text-gray-400">Monto:</span> S/ {partida.parcial.toLocaleString('es-PE', { maximumFractionDigits: 2 })}</div>
+                    <div><span className="text-gray-400">Und:</span> {partida.und || partida.unidad || '—'}</div>
+                    <div><span className="text-gray-400">Metrado:</span> {partida.metrado ?? '—'}</div>
+                    <div><span className="text-gray-400">Inicio:</span> {partida.inicio || '—'}</div>
+                    <div><span className="text-gray-400">Fin:</span> {partida.fin || '—'}</div>
+                    <div><span className="text-gray-400">Monto:</span> {partida.parcial != null ? `S/ ${partida.parcial.toLocaleString('es-PE', { maximumFractionDigits: 2 })}` : '—'}</div>
                     <div><span className="text-gray-400">Prog. hoy:</span> {prog}%</div>
                   </div>
 
