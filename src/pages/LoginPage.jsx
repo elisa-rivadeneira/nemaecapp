@@ -53,7 +53,7 @@ export default function LoginPage() {
     setError('')
     setPendingNavigate(true)
 
-    const ok = login(form.login.trim().toLowerCase(), form.password.trim())
+    const ok = await login(form.login.trim().toLowerCase(), form.password.trim())
     if (!ok) {
       setPendingNavigate(false)
       setError('Usuario o contraseña incorrectos')
@@ -62,7 +62,7 @@ export default function LoginPage() {
 
     pedirGps(
       () => navigate('/comisaria'),
-      () => { /* muestra modal de advertencia, no navega aún */ setPendingNavigate(false) }
+      () => { setPendingNavigate(false) }
     )
   }
 

@@ -23,11 +23,29 @@ export const useAppStore = create(
       ubicacionActual: null,
       loginUbicacion: null,   // ubicación capturada al momento del login
 
-      login(login, password) {
-        const usuario = USUARIOS.find(u => u.login === login && u.dni === password)
-        if (!usuario) return false
-        set({ usuario, comisariaSeleccionada: null })
-        return true
+      async login(login, password) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        try {
+          // Intenta autenticar contra el ERP (fuente de verdad)
+          const res = await fetch(`${erpUrl}/api/v1/usuarios-obra/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ login: login.trim().toLowerCase(), password: password.trim() }),
+          })
+          if (res.ok) {
+            const usuario = await res.json()
+            set({ usuario, comisariaSeleccionada: null })
+            return true
+          }
+          if (res.status === 401) return false  // Credenciales incorrectas, no hacer fallback
+        } catch {
+          // Sin conexión al ERP → fallback a usuarios locales (offline)
+          const usuario = USUARIOS.find(u => u.login === login && u.dni === password)
+          if (!usuario) return false
+          set({ usuario, comisariaSeleccionada: null })
+          return true
+        }
+        return false
       },
 
       logout() {
