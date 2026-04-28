@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { AVANCES_INICIALES, USUARIOS, COMISARIAS, PARTIDAS_POR_COMISARIA } from '../data/mockData'
+import { sincronizarAvanceERP } from '../services/erpSync'
 
 function getNextId(avances) {
   return avances.length > 0 ? Math.max(...avances.map(a => a.id)) + 1 : 1
@@ -79,6 +80,9 @@ export const useAppStore = create(
           pendienteSync: isOnline ? state.pendienteSync : [...state.pendienteSync, nuevo.id],
         }))
 
+        // Si es monitor, sincroniza inmediatamente al ERP (ya está verificado)
+        if (!esResidente && isOnline) sincronizarAvanceERP(nuevo)
+
         return nuevo
       },
 
@@ -96,21 +100,25 @@ export const useAppStore = create(
           nuevoAcumulado = Math.min(acumuladoAnterior + porcentajeDiaMonitor, 100)
         }
 
+        const avanceActualizado = {
+          ...avance,
+          verificado: true,
+          monitorVerificador: usuario?.login,
+          acuerdoConAvance,
+          porcentajeDiaMonitor: acuerdoConAvance ? null : porcentajeDiaMonitor,
+          acumuladoMonitor: acuerdoConAvance ? null : nuevoAcumulado,
+          obsMonitor: obsMonitor || null,
+          fotoMonitor: fotoMonitor || null,
+          fechaVerificacion: new Date().toISOString().split('T')[0],
+          acumulado: acuerdoConAvance ? avance.acumulado : nuevoAcumulado,
+        }
+
         set(state => ({
-          avances: state.avances.map(a => a.id !== avanceId ? a : {
-            ...a,
-            verificado: true,
-            monitorVerificador: usuario?.login,
-            acuerdoConAvance,
-            porcentajeDiaMonitor: acuerdoConAvance ? null : porcentajeDiaMonitor,
-            acumuladoMonitor: acuerdoConAvance ? null : nuevoAcumulado,
-            obsMonitor: obsMonitor || null,
-            fotoMonitor: fotoMonitor || null,
-            fechaVerificacion: new Date().toISOString().split('T')[0],
-            // Actualiza el acumulado oficial si el monitor corrigió
-            acumulado: acuerdoConAvance ? a.acumulado : nuevoAcumulado,
-          })
+          avances: state.avances.map(a => a.id !== avanceId ? a : avanceActualizado)
         }))
+
+        // Sincronizar avance verificado al ERP
+        if (get().isOnline) sincronizarAvanceERP(avanceActualizado)
       },
 
       setOnline(online) {
