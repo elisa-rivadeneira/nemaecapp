@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { AVANCES_INICIALES, USUARIOS, COMISARIAS, PARTIDAS_POR_COMISARIA } from '../data/mockData'
-import { sincronizarAvanceERP } from '../services/erpSync'
+import { sincronizarAvanceERP, sincronizarLoteERP } from '../services/erpSync'
 
 function getNextId(avances) {
   return avances.length > 0 ? Math.max(...avances.map(a => a.id)) + 1 : 1
@@ -192,6 +192,13 @@ export const useAppStore = create(
       setOnline(online) {
         set({ isOnline: online })
         if (online) get().sincronizarPendientes()
+      },
+
+      async sincronizarTodosAlERP() {
+        const { avances } = get()
+        const verificados = avances.filter(a => a.verificado)
+        const count = await sincronizarLoteERP(verificados)
+        return count
       },
 
       sincronizarPendientes() {

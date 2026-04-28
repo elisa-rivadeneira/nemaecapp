@@ -8,7 +8,8 @@ const ERP_URL = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
 function mapAvanceToERP(avance) {
   return {
     app_id: avance.id,
-    comisaria_codigo: avance.comisariaId,
+    comisaria_id: avance.comisariaId,
+    comisaria_codigo: String(avance.comisariaId),
     codigo_partida: avance.codigo,
     fecha: avance.fecha,
     hora: avance.hora || null,
@@ -34,8 +35,13 @@ export async function sincronizarAvanceERP(avance) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(mapAvanceToERP(avance)),
     })
+    if (!res.ok) {
+      const texto = await res.text().catch(() => '')
+      console.error(`[ERP Sync] Error ${res.status} para avance id=${avance.id}:`, texto)
+    }
     return res.ok
-  } catch {
+  } catch (e) {
+    console.error(`[ERP Sync] Error de red para avance id=${avance.id}:`, e)
     return false
   }
 }

@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../store/appStore'
-import { Building2, ChevronRight, LogOut, BarChart2, MapPin, AlertTriangle, Loader2 } from 'lucide-react'
+import { Building2, ChevronRight, LogOut, BarChart2, MapPin, AlertTriangle, Loader2, RefreshCw } from 'lucide-react'
 import OfflineBanner from '../components/OfflineBanner'
 
 export default function SelectComisariaPage() {
@@ -10,7 +10,11 @@ export default function SelectComisariaPage() {
     usuario, logout,
     seleccionarComisaria, cargarComisariasUsuario, cargarPartidasComisaria,
     comisariasUsuario, getResumenComisaria, loginUbicacion, isOnline,
+    sincronizarTodosAlERP,
   } = useAppStore()
+
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState(null)
 
   useEffect(() => {
     cargarComisariasUsuario()
@@ -25,6 +29,16 @@ export default function SelectComisariaPage() {
   function handleLogout() {
     logout()
     navigate('/login')
+  }
+
+  async function handleSyncERP() {
+    if (syncing) return
+    setSyncing(true)
+    setSyncMsg(null)
+    const count = await sincronizarTodosAlERP()
+    setSyncing(false)
+    setSyncMsg(`${count} avances enviados al ERP`)
+    setTimeout(() => setSyncMsg(null), 4000)
   }
 
   return (
@@ -47,12 +61,23 @@ export default function SelectComisariaPage() {
             >
               <BarChart2 size={20} />
             </button>
+            <button
+              onClick={handleSyncERP}
+              disabled={syncing || !isOnline}
+              title="Reenviar todos los avances al ERP"
+              className="p-2 rounded-full bg-white/10 active:bg-white/20 disabled:opacity-40"
+            >
+              <RefreshCw size={20} className={syncing ? 'animate-spin' : ''} />
+            </button>
             <button onClick={handleLogout} className="p-2 rounded-full bg-white/10 active:bg-white/20">
               <LogOut size={20} />
             </button>
           </div>
         </div>
         <p className="text-blue-200 text-sm">Selecciona la comisaría a registrar</p>
+        {syncMsg && (
+          <p className="mt-2 text-green-200 text-xs font-medium">✓ {syncMsg}</p>
+        )}
 
         <div className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 text-xs ${
           loginUbicacion ? 'bg-green-500/20 text-green-100' : 'bg-orange-500/30 text-orange-100'
