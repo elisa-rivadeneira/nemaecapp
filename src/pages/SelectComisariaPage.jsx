@@ -28,7 +28,9 @@ export default function SelectComisariaPage() {
       <div className="bg-brand-800 text-white px-4 pt-6 pb-8">
         <div className="flex items-center justify-between mb-1">
           <div>
-            <p className="text-blue-200 text-xs uppercase tracking-wide">Monitor</p>
+            <p className="text-blue-200 text-xs uppercase tracking-wide">
+              {usuario?.rol === 'residente' ? 'Residente de Obra' : 'Monitor de Obra'}
+            </p>
             <h1 className="text-xl font-bold">{usuario?.nombre}</h1>
           </div>
           <div className="flex gap-2">

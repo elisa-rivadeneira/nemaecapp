@@ -13,12 +13,20 @@ export const COMISARIAS = [
   { id: 'SCA', nombre: 'SAN CAYETANO', lat: -11.9800, lng: -77.0700, proveedor: 'OBRAS PERU SAC' },
 ]
 
-export const MONITORS = [
-  { id: 1, nombre: 'Nivardo Quispe', login: 'nquispe', dni: '45678901', comisariasAsignadas: ['ENS', 'CAR'] },
-  { id: 2, nombre: 'Rosa Mamani', login: 'rmamani', dni: '52341678', comisariasAsignadas: ['SMP', 'VES'] },
-  { id: 3, nombre: 'Carlos Flores', login: 'cflores', dni: '39821456', comisariasAsignadas: ['SCA', 'ENS'] },
-  { id: 4, nombre: 'Ana Torres', login: 'atorres', dni: '61234567', comisariasAsignadas: ['CAR', 'SMP', 'VES'] },
+export const USUARIOS = [
+  // Monitores de obra
+  { id: 1, nombre: 'Nivardo Quispe', login: 'nquispe', dni: '45678901', rol: 'monitor', comisariasAsignadas: ['ENS', 'CAR'] },
+  { id: 2, nombre: 'Rosa Mamani', login: 'rmamani', dni: '52341678', rol: 'monitor', comisariasAsignadas: ['SMP', 'VES'] },
+  { id: 3, nombre: 'Carlos Flores', login: 'cflores', dni: '39821456', rol: 'monitor', comisariasAsignadas: ['SCA', 'ENS'] },
+  { id: 4, nombre: 'Ana Torres', login: 'atorres', dni: '61234567', rol: 'monitor', comisariasAsignadas: ['CAR', 'SMP', 'VES'] },
+  // Residentes de obra
+  { id: 5, nombre: 'Roberto Pérez', login: 'rperez', dni: '72345678', rol: 'residente', comisariasAsignadas: ['ENS', 'CAR'] },
+  { id: 6, nombre: 'María Santos', login: 'msantos', dni: '83456789', rol: 'residente', comisariasAsignadas: ['SMP', 'VES'] },
+  { id: 7, nombre: 'Luis Guerrero', login: 'lguerrero', dni: '94567890', rol: 'residente', comisariasAsignadas: ['SCA', 'ENS'] },
 ]
+
+// Alias de compatibilidad
+export const MONITORS = USUARIOS
 
 // Partidas reales de LA ENSENADA — fechas ajustadas al contexto actual (abr-jun 2026)
 const PARTIDAS_ENSENADA = [
@@ -69,28 +77,32 @@ const PARTIDAS_CARABAYLLO = [
 
 // Avances pre-cargados (histórico de ejemplo)
 export const AVANCES_INICIALES = [
-  // ENS - avances de algunas partidas (con fechas ajustadas)
-  { id: 1, comisariaId: 'ENS', codigo: '01.04', fecha: '2026-03-17', porcentajeDia: 100, acumulado: 100, monitor: 'nquispe', obs: 'Plan de seguridad aprobado', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 2, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-03-18', porcentajeDia: 15, acumulado: 15, monitor: 'nquispe', obs: 'Inicio de obras', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 3, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-03-25', porcentajeDia: 20, acumulado: 35, monitor: 'nquispe', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 4, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-04-08', porcentajeDia: 20, acumulado: 55, monitor: 'nquispe', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 5, comisariaId: 'ENS', codigo: '02.02', fecha: '2026-03-18', porcentajeDia: 50, acumulado: 50, monitor: 'nquispe', obs: 'Replanteo sector A iniciado', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 6, comisariaId: 'ENS', codigo: '02.02', fecha: '2026-03-25', porcentajeDia: 30, acumulado: 80, monitor: 'nquispe', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 7, comisariaId: 'ENS', codigo: '02.03', fecha: '2026-03-22', porcentajeDia: 60, acumulado: 60, monitor: 'nquispe', obs: 'Cobertura norte desmontada', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 8, comisariaId: 'ENS', codigo: '02.03', fecha: '2026-03-28', porcentajeDia: 40, acumulado: 100, monitor: 'nquispe', obs: 'Desmontaje completado', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 9, comisariaId: 'ENS', codigo: '03.01.01.01', fecha: '2026-03-21', porcentajeDia: 50, acumulado: 50, monitor: 'nquispe', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 10, comisariaId: 'ENS', codigo: '03.01.01.01', fecha: '2026-03-28', porcentajeDia: 40, acumulado: 90, monitor: 'nquispe', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 11, comisariaId: 'ENS', codigo: '02.09', fecha: '2026-04-16', porcentajeDia: 15, acumulado: 15, monitor: 'cflores', obs: 'Inicio remoción porcelanato', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 12, comisariaId: 'ENS', codigo: '02.09', fecha: '2026-04-22', porcentajeDia: 10, acumulado: 25, monitor: 'cflores', obs: 'Lento por falta de materiales', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 13, comisariaId: 'ENS', codigo: '04.03.01', fecha: '2026-04-11', porcentajeDia: 20, acumulado: 20, monitor: 'cflores', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  { id: 14, comisariaId: 'ENS', codigo: '04.03.01', fecha: '2026-04-18', porcentajeDia: 15, acumulado: 35, monitor: 'cflores', obs: '', lat: -11.8752, lng: -77.1126, sincronizado: true },
-  // CAR - algunos avances
-  { id: 15, comisariaId: 'CAR', codigo: '01.01', fecha: '2026-03-18', porcentajeDia: 20, acumulado: 20, monitor: 'rmamani', obs: 'Inicio de obra', lat: -11.8910, lng: -77.0332, sincronizado: true },
-  { id: 16, comisariaId: 'CAR', codigo: '01.01', fecha: '2026-04-01', porcentajeDia: 20, acumulado: 40, monitor: 'rmamani', obs: '', lat: -11.8910, lng: -77.0332, sincronizado: true },
-  { id: 17, comisariaId: 'CAR', codigo: '02.02', fecha: '2026-03-18', porcentajeDia: 60, acumulado: 60, monitor: 'rmamani', obs: '', lat: -11.8910, lng: -77.0332, sincronizado: true },
-  { id: 18, comisariaId: 'CAR', codigo: '02.02', fecha: '2026-03-25', porcentajeDia: 40, acumulado: 100, monitor: 'rmamani', obs: 'Replanteo completado', lat: -11.8910, lng: -77.0332, sincronizado: true },
-  { id: 19, comisariaId: 'CAR', codigo: '03.01.01.01', fecha: '2026-03-21', porcentajeDia: 30, acumulado: 30, monitor: 'rmamani', obs: '', lat: -11.8910, lng: -77.0332, sincronizado: true },
-  { id: 20, comisariaId: 'CAR', codigo: '02.05', fecha: '2026-04-02', porcentajeDia: 25, acumulado: 25, monitor: 'atorres', obs: '', lat: -11.8910, lng: -77.0332, sincronizado: true },
+  // ENS - avances históricos de monitores (legacy, sin flujo de verificación)
+  { id: 1, comisariaId: 'ENS', codigo: '01.04', fecha: '2026-03-17', porcentajeDia: 100, acumulado: 100, monitor: 'nquispe', rolRegistrador: 'monitor', obs: 'Plan de seguridad aprobado', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 2, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-03-18', porcentajeDia: 15, acumulado: 15, monitor: 'nquispe', rolRegistrador: 'monitor', obs: 'Inicio de obras', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 3, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-03-25', porcentajeDia: 20, acumulado: 35, monitor: 'nquispe', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 4, comisariaId: 'ENS', codigo: '01.01', fecha: '2026-04-08', porcentajeDia: 20, acumulado: 55, monitor: 'nquispe', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 5, comisariaId: 'ENS', codigo: '02.02', fecha: '2026-03-18', porcentajeDia: 50, acumulado: 50, monitor: 'nquispe', rolRegistrador: 'monitor', obs: 'Replanteo sector A iniciado', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 6, comisariaId: 'ENS', codigo: '02.02', fecha: '2026-03-25', porcentajeDia: 30, acumulado: 80, monitor: 'nquispe', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 7, comisariaId: 'ENS', codigo: '02.03', fecha: '2026-03-22', porcentajeDia: 60, acumulado: 60, monitor: 'nquispe', rolRegistrador: 'monitor', obs: 'Cobertura norte desmontada', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 8, comisariaId: 'ENS', codigo: '02.03', fecha: '2026-03-28', porcentajeDia: 40, acumulado: 100, monitor: 'nquispe', rolRegistrador: 'monitor', obs: 'Desmontaje completado', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 9, comisariaId: 'ENS', codigo: '03.01.01.01', fecha: '2026-03-21', porcentajeDia: 50, acumulado: 50, monitor: 'nquispe', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 10, comisariaId: 'ENS', codigo: '03.01.01.01', fecha: '2026-03-28', porcentajeDia: 40, acumulado: 90, monitor: 'nquispe', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 11, comisariaId: 'ENS', codigo: '02.09', fecha: '2026-04-16', porcentajeDia: 15, acumulado: 15, monitor: 'cflores', rolRegistrador: 'monitor', obs: 'Inicio remoción porcelanato', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 12, comisariaId: 'ENS', codigo: '02.09', fecha: '2026-04-22', porcentajeDia: 10, acumulado: 25, monitor: 'cflores', rolRegistrador: 'monitor', obs: 'Lento por falta de materiales', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 13, comisariaId: 'ENS', codigo: '04.03.01', fecha: '2026-04-11', porcentajeDia: 20, acumulado: 20, monitor: 'cflores', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 14, comisariaId: 'ENS', codigo: '04.03.01', fecha: '2026-04-18', porcentajeDia: 15, acumulado: 35, monitor: 'cflores', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  // CAR - avances históricos
+  { id: 15, comisariaId: 'CAR', codigo: '01.01', fecha: '2026-03-18', porcentajeDia: 20, acumulado: 20, monitor: 'atorres', rolRegistrador: 'monitor', obs: 'Inicio de obra', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  { id: 16, comisariaId: 'CAR', codigo: '01.01', fecha: '2026-04-01', porcentajeDia: 20, acumulado: 40, monitor: 'atorres', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  { id: 17, comisariaId: 'CAR', codigo: '02.02', fecha: '2026-03-18', porcentajeDia: 60, acumulado: 60, monitor: 'atorres', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  { id: 18, comisariaId: 'CAR', codigo: '02.02', fecha: '2026-03-25', porcentajeDia: 40, acumulado: 100, monitor: 'atorres', rolRegistrador: 'monitor', obs: 'Replanteo completado', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  { id: 19, comisariaId: 'CAR', codigo: '03.01.01.01', fecha: '2026-03-21', porcentajeDia: 30, acumulado: 30, monitor: 'atorres', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  { id: 20, comisariaId: 'CAR', codigo: '02.05', fecha: '2026-04-02', porcentajeDia: 25, acumulado: 25, monitor: 'atorres', rolRegistrador: 'monitor', obs: '', foto: null, verificado: true, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
+  // Avances de residentes pendientes de verificación (nuevos)
+  { id: 21, comisariaId: 'ENS', codigo: '02.06', fecha: '2026-04-27', hora: '09:30', porcentajeDia: 35, acumulado: 35, monitor: 'rperez', rolRegistrador: 'residente', obs: 'Desmontaje de puerta completado en sector A', foto: null, verificado: false, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 22, comisariaId: 'ENS', codigo: '02.07', fecha: '2026-04-27', hora: '10:15', porcentajeDia: 25, acumulado: 25, monitor: 'rperez', rolRegistrador: 'residente', obs: 'Removidas 5 lunas del sector norte', foto: null, verificado: false, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8752, lng: -77.1126, sincronizado: true },
+  { id: 23, comisariaId: 'CAR', codigo: '02.09', fecha: '2026-04-27', hora: '08:45', porcentajeDia: 40, acumulado: 40, monitor: 'rperez', rolRegistrador: 'residente', obs: 'Se removió el enchape del baño principal', foto: null, verificado: false, monitorVerificador: null, acuerdoConAvance: null, porcentajeDiaMonitor: null, acumuladoMonitor: null, obsMonitor: null, fotoMonitor: null, fechaVerificacion: null, lat: -11.8910, lng: -77.0332, sincronizado: true },
 ]
 
 export const PARTIDAS_POR_COMISARIA = {

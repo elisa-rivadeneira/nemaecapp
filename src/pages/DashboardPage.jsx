@@ -134,17 +134,28 @@ export default function DashboardPage() {
               return (
                 <div key={av.id} className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex items-center gap-3">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
-                    !av.sincronizado ? 'bg-orange-100 text-orange-700' : 'bg-brand-100 text-brand-700'
+                    !av.sincronizado ? 'bg-orange-100 text-orange-700' :
+                    av.rolRegistrador === 'residente' && !av.verificado ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-brand-100 text-brand-700'
                   }`}>
                     +{av.porcentajeDia}%
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium text-gray-800 truncate">{av.codigo} — {com?.nombre}</p>
-                    <p className="text-[10px] text-gray-400">{av.fecha} · {av.monitor}</p>
+                    <p className="text-[10px] text-gray-400">
+                      {av.fecha} · {av.monitor}
+                      {av.rolRegistrador === 'residente' ? ' (residente)' : ''}
+                    </p>
+                    {av.verificado && av.acuerdoConAvance === false && (
+                      <p className="text-[9px] text-orange-600 font-medium">Corregido por {av.monitorVerificador}: {av.porcentajeDiaMonitor}%</p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-green-600">{av.acumulado}%</p>
                     {!av.sincronizado && <p className="text-[9px] text-orange-500">Pendiente sync</p>}
+                    {av.rolRegistrador === 'residente' && !av.verificado && (
+                      <p className="text-[9px] text-yellow-600 font-medium">Sin verificar</p>
+                    )}
                   </div>
                 </div>
               )

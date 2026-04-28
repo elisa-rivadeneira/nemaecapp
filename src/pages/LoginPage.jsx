@@ -217,10 +217,10 @@ export default function LoginPage() {
         {/* Demo hint */}
         {!cargando && !mostrarModalGps && (
           <div className="mt-4 bg-white/10 rounded-xl p-3 text-blue-100 text-xs space-y-1">
-            <p className="font-semibold text-white text-xs">Usuarios de prueba:</p>
-            <p>nquispe / 45678901</p>
-            <p>rmamani / 52341678</p>
-            <p>cflores / 39821456</p>
+            <p className="font-semibold text-white text-xs">Monitores de obra:</p>
+            <p>nquispe / 45678901 · cflores / 39821456</p>
+            <p className="font-semibold text-white text-xs pt-1">Residentes de obra:</p>
+            <p>rperez / 72345678 · lguerrero / 94567890</p>
           </div>
         )}
       </div>

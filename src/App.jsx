@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import SelectComisariaPage from './pages/SelectComisariaPage'
 import PartidasPage from './pages/PartidasPage'
 import RegistrarAvancePage from './pages/RegistrarAvancePage'
+import VerificarAvancePage from './pages/VerificarAvancePage'
 import DashboardPage from './pages/DashboardPage'
 
 function RequireAuth({ children }) {
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path="/partidas" element={<RequireAuth><RequireComisaria><PartidasPage /></RequireComisaria></RequireAuth>} />
         <Route path="/registrar" element={<RequireAuth><RequireComisaria><RegistrarAvancePage /></RequireComisaria></RequireAuth>} />
+        <Route path="/verificar" element={<RequireAuth><RequireComisaria><VerificarAvancePage /></RequireComisaria></RequireAuth>} />
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </BrowserRouter>

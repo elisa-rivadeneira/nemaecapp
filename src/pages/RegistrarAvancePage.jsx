@@ -11,7 +11,7 @@ export default function RegistrarAvancePage() {
   const { state } = useLocation()
   const partida = state?.partida
 
-  const { comisariaSeleccionada, registrarAvance, getAcumuladoPartida, setUbicacion, ubicacionActual } = useAppStore()
+  const { comisariaSeleccionada, usuario, registrarAvance, getAcumuladoPartida, setUbicacion, ubicacionActual } = useAppStore()
   const comisaria = COMISARIAS.find(c => c.id === comisariaSeleccionada)
 
   const acumuladoActual = getAcumuladoPartida(comisariaSeleccionada, partida?.codigo)
@@ -119,7 +119,9 @@ export default function RegistrarAvancePage() {
             <ArrowLeft size={18} />
           </button>
           <div className="flex-1 min-w-0">
-            <p className="text-blue-200 text-xs">Registrar avance</p>
+            <p className="text-blue-200 text-xs">
+          {usuario?.rol === 'residente' ? 'Registrar avance — Residente' : 'Registrar avance — Monitor'}
+        </p>
             <h1 className="font-bold text-sm leading-tight truncate">{comisaria?.nombre}</h1>
           </div>
         </div>

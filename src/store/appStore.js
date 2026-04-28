@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { AVANCES_INICIALES, MONITORS, COMISARIAS, PARTIDAS_POR_COMISARIA } from '../data/mockData'
+import { AVANCES_INICIALES, USUARIOS, COMISARIAS, PARTIDAS_POR_COMISARIA } from '../data/mockData'
 
 function getNextId(avances) {
   return avances.length > 0 ? Math.max(...avances.map(a => a.id)) + 1 : 1
@@ -23,9 +23,9 @@ export const useAppStore = create(
       loginUbicacion: null,   // ubicación capturada al momento del login
 
       login(login, password) {
-        const monitor = MONITORS.find(m => m.login === login && m.dni === password)
-        if (!monitor) return false
-        set({ usuario: monitor, comisariaSeleccionada: null })
+        const usuario = USUARIOS.find(u => u.login === login && u.dni === password)
+        if (!usuario) return false
+        set({ usuario, comisariaSeleccionada: null })
         return true
       },
 
@@ -46,6 +46,7 @@ export const useAppStore = create(
           ? registrosAnteriores[registrosAnteriores.length - 1].acumulado
           : 0
         const nuevoAcumulado = Math.min(acumuladoAnterior + porcentajeDia, 100)
+        const esResidente = usuario?.rol === 'residente'
 
         const nuevo = {
           id: getNextId(get().avances),
@@ -56,8 +57,18 @@ export const useAppStore = create(
           porcentajeDia,
           acumulado: nuevoAcumulado,
           monitor: usuario?.login,
+          rolRegistrador: usuario?.rol || 'monitor',
           obs: observaciones,
           foto: foto || null,
+          // Verificación: residentes quedan pendientes, monitores ya están verificados
+          verificado: !esResidente,
+          monitorVerificador: null,
+          acuerdoConAvance: null,
+          porcentajeDiaMonitor: null,
+          acumuladoMonitor: null,
+          obsMonitor: null,
+          fotoMonitor: null,
+          fechaVerificacion: null,
           lat,
           lng,
           sincronizado: isOnline,
@@ -69,6 +80,37 @@ export const useAppStore = create(
         }))
 
         return nuevo
+      },
+
+      verificarAvance(avanceId, { acuerdoConAvance, porcentajeDiaMonitor, obsMonitor, fotoMonitor }) {
+        const { usuario, avances } = get()
+        const avance = avances.find(a => a.id === avanceId)
+        if (!avance) return
+
+        let nuevoAcumulado = avance.acumulado
+        if (!acuerdoConAvance && porcentajeDiaMonitor != null) {
+          const anteriores = avances.filter(
+            a => a.comisariaId === avance.comisariaId && a.codigo === avance.codigo && a.id < avanceId
+          )
+          const acumuladoAnterior = anteriores.length > 0 ? anteriores[anteriores.length - 1].acumulado : 0
+          nuevoAcumulado = Math.min(acumuladoAnterior + porcentajeDiaMonitor, 100)
+        }
+
+        set(state => ({
+          avances: state.avances.map(a => a.id !== avanceId ? a : {
+            ...a,
+            verificado: true,
+            monitorVerificador: usuario?.login,
+            acuerdoConAvance,
+            porcentajeDiaMonitor: acuerdoConAvance ? null : porcentajeDiaMonitor,
+            acumuladoMonitor: acuerdoConAvance ? null : nuevoAcumulado,
+            obsMonitor: obsMonitor || null,
+            fotoMonitor: fotoMonitor || null,
+            fechaVerificacion: new Date().toISOString().split('T')[0],
+            // Actualiza el acumulado oficial si el monitor corrigió
+            acumulado: acuerdoConAvance ? a.acumulado : nuevoAcumulado,
+          })
+        }))
       },
 
       setOnline(online) {
