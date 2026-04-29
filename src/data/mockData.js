@@ -122,12 +122,15 @@ export function calcularAcumulado(avances, comisariaId, codigo) {
 
 // Calcula el avance programado esperado a la fecha de hoy
 export function calcularProgramadoHoy(partida) {
+  if (!partida.inicio || !partida.fin) return 0
   const hoy = new Date()
   const inicio = new Date(partida.inicio)
   const fin = new Date(partida.fin)
+  if (isNaN(inicio.getTime()) || isNaN(fin.getTime())) return 0
   if (hoy < inicio) return 0
-  if (hoy > fin) return 100
+  if (hoy >= fin) return 100
   const totalDias = (fin - inicio) / 86400000
+  if (totalDias <= 0) return 100
   const diasTranscurridos = (hoy - inicio) / 86400000
   return Math.round((diasTranscurridos / totalDias) * 100)
 }
