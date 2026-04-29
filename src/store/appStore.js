@@ -95,6 +95,8 @@ export const useAppStore = create(
               partida: p.descripcion,
               unidad: p.unidad || '-',
               metrado: p.metrado || 0,
+              inicio: p.fecha_inicio ? p.fecha_inicio.split('T')[0] : null,
+              fin: p.fecha_fin ? p.fecha_fin.split('T')[0] : null,
             }))
           set({ partidasComisaria: partidas })
         } catch {
