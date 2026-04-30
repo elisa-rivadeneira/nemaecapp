@@ -10,10 +10,12 @@ export default function RegistrarAvancePage() {
   const { state } = useLocation()
   const partida = state?.partida
 
-  const { comisariaSeleccionada, comisariaSeleccionadaObj, usuario, registrarAvance, getAcumuladoPartida, setUbicacion, ubicacionActual } = useAppStore()
+  const { comisariaSeleccionada, comisariaSeleccionadaObj, usuario, registrarAvance, getAcumuladoPartida, getAvancesPartida, setUbicacion, ubicacionActual } = useAppStore()
   const comisaria = comisariaSeleccionadaObj
 
+  const avancesAnteriores = getAvancesPartida(comisariaSeleccionada, partida?.codigo)
   const acumuladoActual = getAcumuladoPartida(comisariaSeleccionada, partida?.codigo)
+  const avancesPendientes = avancesAnteriores.filter(a => a.rolRegistrador === 'residente' && !a.verificado)
   const [porcentaje, setPorcentaje] = useState('')
   const [observaciones, setObs] = useState('')
   const [foto, setFoto] = useState(null)
@@ -74,6 +76,7 @@ export default function RegistrarAvancePage() {
   }
 
   if (submitted) {
+    const esResidente = usuario?.rol === 'residente'
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-6 text-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
@@ -81,6 +84,11 @@ export default function RegistrarAvancePage() {
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-1">¡Avance registrado!</h2>
         <p className="text-gray-500 text-sm mb-1">{partida.partida}</p>
+        {esResidente && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-2 mt-2 mb-2">
+            <p className="text-xs text-yellow-700 font-medium">⏳ Pendiente de verificación del monitor</p>
+          </div>
+        )}
         <div className="flex gap-4 mt-3 mb-6">
           <div className="text-center">
             <p className="text-2xl font-bold text-brand-700">+{porcentajeNum}%</p>
@@ -88,7 +96,7 @@ export default function RegistrarAvancePage() {
           </div>
           <div className="text-center">
             <p className="text-2xl font-bold text-green-600">{nuevoAcumulado}%</p>
-            <p className="text-xs text-gray-400">total acumulado</p>
+            <p className="text-xs text-gray-400">{esResidente ? 'total (si se aprueba)' : 'total acumulado'}</p>
           </div>
         </div>
         <button
@@ -134,7 +142,7 @@ export default function RegistrarAvancePage() {
           <div className="flex items-center gap-4 mt-3">
             <div className="text-center">
               <p className="text-xl font-bold text-gray-700">{acumuladoActual}%</p>
-              <p className="text-[10px] text-gray-400">acumulado</p>
+              <p className="text-[10px] text-gray-400">verificado</p>
             </div>
             <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
               <div
@@ -147,6 +155,32 @@ export default function RegistrarAvancePage() {
               <p className="text-[10px] text-gray-400">disponible</p>
             </div>
           </div>
+
+          {/* Mostrar avances pendientes si hay */}
+          {avancesPendientes.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs font-medium text-yellow-600 mb-2">⏳ Avances pendientes de verificación:</p>
+              {avancesPendientes.map(av => (
+                <div key={av.id} className="flex justify-between items-center text-xs text-gray-600 mb-1">
+                  <span>{av.fecha} - {av.monitor}</span>
+                  <span className="font-semibold text-yellow-600">+{av.porcentajeDia}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Historial de últimos avances verificados */}
+          {avancesAnteriores.filter(a => a.verificado).slice(-3).length > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <p className="text-xs font-medium text-gray-500 mb-2">Últimos avances:</p>
+              {avancesAnteriores.filter(a => a.verificado).slice(-3).map(av => (
+                <div key={av.id} className="flex justify-between items-center text-xs text-gray-500 mb-1">
+                  <span>{av.fecha} - {av.rolRegistrador === 'monitor' ? 'Monitor' : 'Residente'}</span>
+                  <span className="font-medium text-green-600">+{av.porcentajeDia}% ✓</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Geolocalización */}

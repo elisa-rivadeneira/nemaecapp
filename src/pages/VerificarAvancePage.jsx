@@ -11,9 +11,13 @@ export default function VerificarAvancePage() {
   const avance = state?.avance
   const partida = state?.partida
 
-  const { comisariaSeleccionada, verificarAvance } = useAppStore()
+  const { comisariaSeleccionada, verificarAvance, getAcumuladoPartida, getAvancesPartida } = useAppStore()
   const comisaria = COMISARIAS.find(c => c.id === comisariaSeleccionada)
   const residente = USUARIOS.find(u => u.login === avance?.monitor)
+
+  const avancesAnteriores = getAvancesPartida(comisariaSeleccionada, partida?.codigo)
+  const acumuladoActual = getAcumuladoPartida(comisariaSeleccionada, partida?.codigo)
+  const acumuladoAnterior = acumuladoActual - avance?.porcentajeDia
 
   const [decision, setDecision] = useState(null) // 'confirmar' | 'corregir'
   const [porcentajeMonitor, setPorcentajeMonitor] = useState('')
@@ -29,9 +33,10 @@ export default function VerificarAvancePage() {
 
   if (!avance || !partida) return null
 
-  const maxPermitido = avance.acumulado
+  const maxPermitido = 100 - acumuladoAnterior
   const porcentajeNum = parseFloat(porcentajeMonitor) || 0
-  const esValido = decision === 'confirmar' || (decision === 'corregir' && porcentajeNum > 0 && porcentajeNum <= 100)
+  const nuevoAcumulado = decision === 'confirmar' ? acumuladoActual : Math.min(acumuladoAnterior + porcentajeNum, 100)
+  const esValido = decision === 'confirmar' || (decision === 'corregir' && porcentajeNum > 0 && porcentajeNum <= maxPermitido)
 
   function handleFoto(e) {
     const file = e.target.files[0]
@@ -134,16 +139,36 @@ export default function VerificarAvancePage() {
             <span className="text-[10px] text-blue-500 ml-auto">{avance.fecha} {avance.hora && `· ${avance.hora}`}</span>
           </div>
 
-          <div className="flex items-center gap-4 mb-3">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-blue-700">+{avance.porcentajeDia}%</p>
-              <p className="text-[10px] text-blue-500">del día</p>
-            </div>
-            <div className="flex-1">
-              <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
-                <div className="h-full bg-blue-500 rounded-full" style={{ width: `${avance.acumulado}%` }} />
+          <div className="space-y-3">
+            {/* Progreso actual */}
+            <div className="bg-white rounded-lg p-2">
+              <div className="flex justify-between items-center text-xs text-gray-600 mb-1">
+                <span>Avance anterior verificado:</span>
+                <span className="font-semibold">{acumuladoAnterior}%</span>
               </div>
-              <p className="text-xs text-blue-600 mt-1 font-medium">Acumulado: {avance.acumulado}%</p>
+              <div className="flex justify-between items-center text-xs text-blue-600 mb-1">
+                <span>Propone agregar hoy:</span>
+                <span className="font-bold">+{avance.porcentajeDia}%</span>
+              </div>
+              <div className="border-t pt-1 flex justify-between items-center text-sm font-bold">
+                <span className="text-gray-700">Total si se aprueba:</span>
+                <span className="text-blue-700">{avance.acumulado}%</span>
+              </div>
+            </div>
+
+            {/* Barra de progreso visual */}
+            <div>
+              <div className="h-3 bg-gray-200 rounded-full overflow-hidden relative">
+                {/* Avance verificado anterior */}
+                <div className="absolute h-full bg-green-500 rounded-full" style={{ width: `${acumuladoAnterior}%` }} />
+                {/* Avance propuesto por residente */}
+                <div className="absolute h-full bg-blue-400 rounded-full opacity-70"
+                     style={{ left: `${acumuladoAnterior}%`, width: `${avance.porcentajeDia}%` }} />
+              </div>
+              <div className="flex justify-between mt-1">
+                <span className="text-[10px] text-green-600">Verificado: {acumuladoAnterior}%</span>
+                <span className="text-[10px] text-blue-600">Pendiente: +{avance.porcentajeDia}%</span>
+              </div>
             </div>
           </div>
 
@@ -197,13 +222,13 @@ export default function VerificarAvancePage() {
         {decision === 'corregir' && (
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
             <label className="block text-sm font-semibold text-orange-800 mb-3">
-              ¿Cuál es el porcentaje real avanzado?
+              ¿Cuál es el porcentaje real avanzado hoy?
             </label>
             <div className="flex items-center gap-3">
               <input
                 type="number"
-                min="1"
-                max="100"
+                min="0"
+                max={maxPermitido}
                 step="1"
                 placeholder="0"
                 value={porcentajeMonitor}
@@ -211,12 +236,15 @@ export default function VerificarAvancePage() {
                 className="w-24 text-center text-2xl font-bold border-2 border-orange-300 rounded-xl py-3 focus:outline-none focus:border-orange-500 bg-white"
               />
               <div className="flex-1">
-                <p className="text-sm text-orange-700">
-                  El residente reportó: <span className="font-bold line-through">{avance.porcentajeDia}%</span>
+                <p className="text-xs text-orange-600">
+                  Avance verificado anterior: <span className="font-semibold">{acumuladoAnterior}%</span>
+                </p>
+                <p className="text-xs text-orange-700 mt-1">
+                  Residente propuso: <span className="font-bold line-through">+{avance.porcentajeDia}%</span>
                 </p>
                 {porcentajeNum > 0 && (
-                  <p className="text-sm text-orange-800 font-semibold mt-0.5">
-                    Tu corrección: {porcentajeNum}%
+                  <p className="text-sm text-orange-800 font-bold mt-1">
+                    Nuevo total: {nuevoAcumulado}% (con +{porcentajeNum}%)
                   </p>
                 )}
                 {porcentajeNum > 100 && (
