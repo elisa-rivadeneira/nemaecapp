@@ -198,8 +198,9 @@ export const useAppStore = create(
 
       async sincronizarTodosAlERP() {
         const { avances } = get()
-        const verificados = avances.filter(a => a.verificado)
-        const count = await sincronizarLoteERP(verificados)
+        // Enviar TODOS los avances (verificados y borradores)
+        // Los borradores solo serán visibles para monitores en el ERP
+        const count = await sincronizarLoteERP(avances)
         return count
       },
 

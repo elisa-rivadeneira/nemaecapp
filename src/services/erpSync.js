@@ -1,6 +1,7 @@
 /**
- * Sincronización de avances verificados hacia el ERP NEMAEC.
- * Solo se envían avances que ya pasaron por el flujo de verificación del monitor.
+ * Sincronización de avances hacia el ERP NEMAEC.
+ * Se envían tanto avances verificados como no verificados (borradores).
+ * Los no verificados solo son visibles para monitores en el ERP.
  */
 
 const ERP_URL = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
@@ -17,12 +18,15 @@ function mapAvanceToERP(avance) {
     acumulado: avance.acumulado,
     residente_login: avance.rolRegistrador === 'residente' ? avance.monitor : null,
     obs_residente: avance.rolRegistrador === 'residente' ? avance.obs : null,
+    foto_residente: avance.rolRegistrador === 'residente' ? avance.foto : null,
     monitor_verificador: avance.monitorVerificador || (avance.rolRegistrador === 'monitor' ? avance.monitor : null),
     acuerdo_con_avance: avance.acuerdoConAvance,
     porcentaje_dia_monitor: avance.porcentajeDiaMonitor || null,
     acumulado_final: avance.acumulado,
     obs_monitor: avance.obsMonitor || null,
+    foto_monitor: avance.fotoMonitor || null,
     fecha_verificacion: avance.fechaVerificacion || avance.fecha,
+    estado: avance.verificado ? 'verificado' : 'borrador',
     lat: avance.lat || null,
     lng: avance.lng || null,
   }
