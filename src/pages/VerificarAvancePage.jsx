@@ -19,7 +19,7 @@ export default function VerificarAvancePage() {
   const acumuladoActual = getAcumuladoPartida(comisariaSeleccionada, partida?.codigo)
   const acumuladoAnterior = acumuladoActual - avance?.porcentajeDia
 
-  const [decision, setDecision] = useState(null) // 'confirmar' | 'modificar'
+  const [decision, setDecision] = useState(null) // 'confirmar' | 'corregir'
   const [porcentajeMonitor, setPorcentajeMonitor] = useState('')
   const [obsMonitor, setObsMonitor] = useState('')
   const [fotoMonitor, setFotoMonitor] = useState(null)
@@ -36,7 +36,7 @@ export default function VerificarAvancePage() {
   const maxPermitido = 100 - acumuladoAnterior
   const porcentajeNum = parseFloat(porcentajeMonitor) || 0
   const nuevoAcumulado = decision === 'confirmar' ? acumuladoActual : Math.min(acumuladoAnterior + porcentajeNum, 100)
-  const esValido = decision === 'confirmar' || (decision === 'modificar' && porcentajeNum > 0 && porcentajeNum <= maxPermitido)
+  const esValido = decision === 'confirmar' || (decision === 'corregir' && porcentajeNum > 0 && porcentajeNum <= maxPermitido)
 
   function handleFoto(e) {
     const file = e.target.files[0]
@@ -74,7 +74,7 @@ export default function VerificarAvancePage() {
           }
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-1">
-          {resultado.acuerdoConAvance ? '¡Avance confirmado!' : 'Avance modificado'}
+          {resultado.acuerdoConAvance ? '¡Avance verificado!' : 'Avance corregido'}
         </h2>
         <p className="text-gray-500 text-sm mb-1">{partida.partida}</p>
 
@@ -90,7 +90,7 @@ export default function VerificarAvancePage() {
             </div>
             <div className="text-center">
               <p className="text-xl font-bold text-orange-500">{resultado.porcentajeNum}%</p>
-              <p className="text-[10px] text-gray-400">modificado</p>
+              <p className="text-[10px] text-gray-400">corregido</p>
             </div>
           </div>
         )}
@@ -201,28 +201,28 @@ export default function VerificarAvancePage() {
               }`}
             >
               <ShieldCheck size={20} />
-              Confirmar
+              Sí, confirmo
             </button>
             <button
               type="button"
-              onClick={() => setDecision('modificar')}
+              onClick={() => setDecision('corregir')}
               className={`py-3 rounded-xl text-sm font-semibold border-2 transition-colors flex flex-col items-center gap-1 ${
-                decision === 'modificar'
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'bg-blue-50 text-blue-700 border-blue-200 active:bg-blue-100'
+                decision === 'corregir'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'bg-orange-50 text-orange-700 border-orange-200 active:bg-orange-100'
               }`}
             >
               <ShieldAlert size={20} />
-              Modificar
+              No, corregir
             </button>
           </div>
         </div>
 
-        {/* Input del % correcto — solo si decide modificar */}
-        {decision === 'modificar' && (
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-            <label className="block text-sm font-semibold text-blue-800 mb-3">
-              Ingresa el porcentaje correcto del avance de hoy:
+        {/* Input del % correcto — solo si decide corregir */}
+        {decision === 'corregir' && (
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4">
+            <label className="block text-sm font-semibold text-orange-800 mb-3">
+              ¿Cuál es el porcentaje real avanzado hoy?
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -233,17 +233,17 @@ export default function VerificarAvancePage() {
                 placeholder="0"
                 value={porcentajeMonitor}
                 onChange={e => setPorcentajeMonitor(e.target.value)}
-                className="w-24 text-center text-2xl font-bold border-2 border-blue-300 rounded-xl py-3 focus:outline-none focus:border-blue-500 bg-white"
+                className="w-24 text-center text-2xl font-bold border-2 border-orange-300 rounded-xl py-3 focus:outline-none focus:border-orange-500 bg-white"
               />
               <div className="flex-1">
-                <p className="text-xs text-blue-600">
+                <p className="text-xs text-orange-600">
                   Avance verificado anterior: <span className="font-semibold">{acumuladoAnterior}%</span>
                 </p>
-                <p className="text-xs text-blue-700 mt-1">
-                  Residente propuso: <span className="font-bold">+{avance.porcentajeDia}%</span>
+                <p className="text-xs text-orange-700 mt-1">
+                  Residente propuso: <span className="font-bold line-through">+{avance.porcentajeDia}%</span>
                 </p>
                 {porcentajeNum > 0 && (
-                  <p className="text-sm text-blue-800 font-bold mt-1">
+                  <p className="text-sm text-orange-800 font-bold mt-1">
                     Nuevo total: {nuevoAcumulado}% (con +{porcentajeNum}%)
                   </p>
                 )}
