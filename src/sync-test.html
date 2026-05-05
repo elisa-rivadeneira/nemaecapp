@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Sincronización NEMAEC</title>
+</head>
+<body>
+  <h1>Test de Sincronización de Avances</h1>
+  <button onclick="syncAvances()">Sincronizar Todos los Avances</button>
+  <div id="result"></div>
+
+  <script>
+    // Script para sincronizar avances desde la consola
+    async function syncAvances() {
+      const result = document.getElementById('result');
+      result.innerHTML = 'Sincronizando...';
+
+      // Obtener avances del localStorage
+      const storage = localStorage.getItem('monitor-obra-storage');
+      if (!storage) {
+        result.innerHTML = 'No hay datos en localStorage';
+        return;
+      }
+
+      const data = JSON.parse(storage);
+      const avances = data.state?.avances || [];
+
+      if (avances.length === 0) {
+        result.innerHTML = 'No hay avances para sincronizar';
+        return;
+      }
+
+      // Mapeo de códigos de comisaría a IDs del ERP
+      const COMISARIA_ID_MAP = {
+        'ENS': 67, // Ensenada
+        'CAR': 63, // Carabayllo
+        'SCA': 74, // San Cayetano
+        'SMP': 999, // San Martin de Porres (temporal)
+        'VES': 998, // Villa el Salvador (temporal)
+      };
+
+      let success = 0;
+      let failed = 0;
+
+      for (const avance of avances) {
+        const comisariaId = COMISARIA_ID_MAP[avance.comisariaId] || 0;
+
+        const payload = {
+          app_id: avance.id,
+          comisaria_id: comisariaId,
+          comisaria_codigo: String(avance.comisariaId),
+          codigo_partida: avance.codigo,
+          fecha: avance.fecha,
+          hora: avance.hora || null,
+          porcentaje_dia: avance.porcentajeDia,
+          acumulado: avance.acumulado,
+          residente_login: avance.rolRegistrador === 'residente' ? avance.monitor : null,
+          obs_residente: avance.rolRegistrador === 'residente' ? avance.obs : null,
+          monitor_verificador: avance.monitorVerificador || (avance.rolRegistrador === 'monitor' ? avance.monitor : null),
+          acuerdo_con_avance: avance.acuerdoConAvance,
+          porcentaje_dia_monitor: avance.porcentajeDiaMonitor || null,
+          acumulado_final: avance.acumulado,
+          obs_monitor: avance.obsMonitor || null,
+          fecha_verificacion: avance.fechaVerificacion || avance.fecha,
+          estado: avance.verificado ? 'verificado' : 'borrador',
+          lat: avance.lat || null,
+          lng: avance.lng || null,
+        };
+
+        try {
+          const res = await fetch('http://localhost:8000/api/v1/avances-app/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+
+          if (res.ok) {
+            success++;
+            console.log(`✅ Avance ${avance.id} sincronizado`);
+          } else {
+            failed++;
+            const error = await res.text();
+            console.error(`❌ Avance ${avance.id} falló:`, error);
+          }
+        } catch (e) {
+          failed++;
+          console.error(`❌ Avance ${avance.id} error de red:`, e);
+        }
+      }
+
+      result.innerHTML = `
+        <h3>Resultado de Sincronización</h3>
+        <p>Total de avances: ${avances.length}</p>
+        <p style="color: green">✅ Exitosos: ${success}</p>
+        <p style="color: red">❌ Fallidos: ${failed}</p>
+      `;
+    }
+
+    // Auto-ejecutar al cargar la página
+    window.onload = () => {
+      console.log('Para sincronizar manualmente, ejecuta: syncAvances()');
+    };
+  </script>
+</body>
+</html>

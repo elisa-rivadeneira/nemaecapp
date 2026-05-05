@@ -20,14 +20,18 @@ export default function LoginPage() {
   const [pendingNavigate, setPendingNavigate] = useState(false)
 
   function pedirGps(onSuccess, onFail) {
+    console.log('pedirGps iniciado, navegador tiene geolocation:', !!navigator.geolocation)
     if (!navigator.geolocation) {
+      console.log('GPS no disponible en navegador')
       setGpsEstado(GPS_UNAVAILABLE)
-      onFail()
+      onFail('GPS no disponible')
       return
     }
+    console.log('Solicitando GPS...')
     setGpsEstado(GPS_REQUESTING)
     navigator.geolocation.getCurrentPosition(
       pos => {
+        console.log('GPS exitoso:', pos.coords)
         const ub = {
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
@@ -40,11 +44,12 @@ export default function LoginPage() {
         onSuccess(ub)
       },
       err => {
+        console.log('GPS error:', err.code, err.message)
         // err.code: 1=PERMISSION_DENIED, 2=UNAVAILABLE, 3=TIMEOUT
         setGpsEstado(err.code === 1 ? GPS_DENIED : GPS_UNAVAILABLE)
         onFail(err)
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
     )
   }
 
@@ -60,23 +65,30 @@ export default function LoginPage() {
       return
     }
 
+    console.log('Login exitoso, intentando GPS...')
     pedirGps(
-      () => navigate('/comisaria'),
-      () => { setPendingNavigate(false) }
+      () => {
+        console.log('GPS exitoso, navegando...')
+        navigate('/comisarias')
+      },
+      (error) => {
+        console.log('GPS falló:', error)
+        setPendingNavigate(false)
+      }
     )
   }
 
   function handleReintentar() {
     setPendingNavigate(true)
     pedirGps(
-      () => navigate('/comisaria'),
+      () => navigate('/comisarias'),
       () => setPendingNavigate(false)
     )
   }
 
   function handleContinuarSinGps() {
     setLoginUbicacion(null)
-    navigate('/comisaria')
+    navigate('/comisarias')
   }
 
   const cargando = pendingNavigate && gpsEstado === GPS_REQUESTING
@@ -218,9 +230,17 @@ export default function LoginPage() {
         {!cargando && !mostrarModalGps && (
           <div className="mt-4 bg-white/10 rounded-xl p-3 text-blue-100 text-xs space-y-1">
             <p className="font-semibold text-white text-xs">Monitores de obra:</p>
-            <p>nquispe / 45678901 · cflores / 39821456</p>
+            <p>lcallupe / 123456 · nquispe / 123456 · mbustamante / 123456</p>
             <p className="font-semibold text-white text-xs pt-1">Residentes de obra:</p>
-            <p>rperez / 72345678 · lguerrero / 94567890</p>
+            <p>grodriguez / 123465 · cvera / 123456</p>
+
+            {/* DEBUG: Botón para saltar GPS */}
+            <button
+              onClick={() => navigate('/comisarias')}
+              className="w-full mt-2 bg-red-600 text-white py-1 rounded text-xs"
+            >
+              🐛 DEBUG: Skip to App
+            </button>
           </div>
         )}
       </div>

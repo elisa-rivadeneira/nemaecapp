@@ -23,7 +23,7 @@ export default function SelectComisariaPage() {
   async function handleSeleccionar(comisaria) {
     seleccionarComisaria(comisaria.id, comisaria)
     await cargarPartidasComisaria(comisaria.id)
-    navigate('/partidas')
+    navigate('/comisaria/modulos')
   }
 
   function handleLogout() {

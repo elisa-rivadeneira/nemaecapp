@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { AVANCES_INICIALES, USUARIOS, COMISARIAS, PARTIDAS_POR_COMISARIA } from '../data/mockData'
 import { sincronizarAvanceERP, sincronizarLoteERP } from '../services/erpSync'
 
@@ -18,11 +18,16 @@ export const useAppStore = create(
       // Datos ERP (cargados desde API)
       comisariasUsuario: [],           // comisarías asignadas al usuario logueado
       partidasComisaria: [],           // partidas de la comisaría seleccionada
+      partidasCache: {},                // cache de partidas por comisaría {comisariaId: partidas[]}
 
-      // Datos
-      avances: AVANCES_INICIALES,
+      // Datos (iniciales vacíos, se cargan desde persist)
+      avances: [],
       pendienteSync: [],
       isOnline: navigator.onLine,
+
+      // Cuaderno de Obra
+      asientosCuaderno: [],
+      asientoBorrador: null,
 
       // Geolocation
       ubicacionActual: null,
@@ -42,10 +47,11 @@ export const useAppStore = create(
             set({ usuario, comisariaSeleccionada: null })
             return true
           }
-          if (res.status === 401) return false  // Credenciales incorrectas, no hacer fallback
-        } catch {
-          // Sin conexión al ERP → fallback a usuarios locales (offline)
-          const usuario = USUARIOS.find(u => u.login === login && u.dni === password)
+          if (res.status === 401) return false  // Credenciales incorrectas - NO hacer fallback
+        } catch (error) {
+          // Error de red/conexión - usar fallback para desarrollo
+          console.warn('No se pudo conectar al servidor ERP, usando modo offline:', error.message)
+          const usuario = USUARIOS.find(u => u.login === login.trim().toLowerCase() && u.dni === password.trim())
           if (!usuario) return false
           set({ usuario, comisariaSeleccionada: null })
           return true
@@ -98,9 +104,17 @@ export const useAppStore = create(
               inicio: p.fecha_inicio ? p.fecha_inicio.split('T')[0] : null,
               fin: p.fecha_fin ? p.fecha_fin.split('T')[0] : null,
             }))
-          set({ partidasComisaria: partidas })
+          // Guardar en cache y en partidasComisaria
+          set(state => ({
+            partidasComisaria: partidas,
+            partidasCache: { ...state.partidasCache, [comisariaId]: partidas }
+          }))
         } catch {
-          set({ partidasComisaria: [] })
+          // Si falla, NO cargar nada (sin datos de prueba)
+          set(state => ({
+            partidasComisaria: [],
+            partidasCache: { ...state.partidasCache, [comisariaId]: [] }
+          }))
         }
       },
 
@@ -225,8 +239,17 @@ export const useAppStore = create(
       },
 
       getPartidasComisaria(comisariaId) {
-        const { partidasComisaria } = get()
-        return partidasComisaria.length > 0 ? partidasComisaria : (PARTIDAS_POR_COMISARIA[comisariaId] || [])
+        const { partidasComisaria, partidasCache, comisariaSeleccionada } = get()
+        // Si es la comisaría seleccionada actual, usar partidasComisaria
+        if (comisariaSeleccionada === comisariaId && partidasComisaria.length > 0) {
+          return partidasComisaria
+        }
+        // Si está en cache, usar cache
+        if (partidasCache[comisariaId]) {
+          return partidasCache[comisariaId]
+        }
+        // Si no hay datos, devolver array vacío (NO usar mockData)
+        return []
       },
 
       getAvancesPartida(comisariaId, codigo) {
@@ -240,8 +263,8 @@ export const useAppStore = create(
       },
 
       getResumenComisaria(comisariaId) {
-        const { partidasComisaria } = get()
-        const partidas = partidasComisaria.length > 0 ? partidasComisaria : (PARTIDAS_POR_COMISARIA[comisariaId] || [])
+        // Usar getPartidasComisaria que maneja el cache correctamente
+        const partidas = get().getPartidasComisaria(comisariaId)
         const totalPartidas = partidas.length
         const completadas = partidas.filter(p => get().getAcumuladoPartida(comisariaId, p.codigo) >= 100).length
         const sinIniciar = partidas.filter(p => get().getAcumuladoPartida(comisariaId, p.codigo) === 0).length
@@ -250,17 +273,216 @@ export const useAppStore = create(
           ? partidas.reduce((sum, p) => sum + get().getAcumuladoPartida(comisariaId, p.codigo), 0) / totalPartidas
           : 0
         return { totalPartidas, completadas, sinIniciar, enCurso, avanceGeneral: Math.round(avanceGeneral) }
+      },
+
+      // ===== CUADERNO DE OBRA =====
+
+      async precargarAsiento(comisariaId) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        const { usuario } = get()
+        try {
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos/precargar`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-User-ID': usuario.id.toString()
+            },
+            body: JSON.stringify({
+              comisaria_id: comisariaId,
+              fecha: new Date().toISOString().split('T')[0]
+            })
+          })
+          if (res.ok) {
+            const borrador = await res.json()
+            set({ asientoBorrador: borrador })
+            return borrador
+          }
+        } catch (error) {
+          console.error('Error precargando asiento:', error)
+        }
+        // Fallback con datos mock
+        return {
+          datos_generales: {
+            condiciones_climaticas: '',
+            personal_presente: 0,
+            equipos_operando: '',
+            observaciones_generales: ''
+          },
+          contenido: {
+            avances_partidas: [],
+            ocurrencias: [],
+            consultas: []
+          },
+          metadata: {
+            cantidad_avances: 0,
+            cantidad_ocurrencias: 0,
+            cantidad_consultas: 0
+          }
+        }
+      },
+
+      async cargarAsientosCuaderno(comisariaId) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        try {
+          // Usar endpoint simple que funciona
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos-simple?comisaria_id=${comisariaId}`)
+          if (res.ok) {
+            const asientos = await res.json()
+            set({ asientosCuaderno: asientos || [] })
+            return asientos || []
+          }
+        } catch (error) {
+          console.error('Error cargando asientos:', error)
+        }
+        set({ asientosCuaderno: [] })
+        return []
+      },
+
+      async obtenerAsiento(asientoId) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        try {
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos/${asientoId}`)
+          if (res.ok) {
+            return await res.json()
+          }
+        } catch (error) {
+          console.error('Error obteniendo asiento:', error)
+        }
+        return null
+      },
+
+      async guardarAsiento(asientoData) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        const { usuario, ubicacionActual } = get()
+        try {
+          // Transformar la estructura para que coincida con CrearAsientoRequest del backend
+          const payload = {
+            comisaria_id: asientoData.comisaria_id,
+            tipo_asiento: asientoData.tipo_asiento?.toUpperCase() || 'DIARIO',
+            contenido: {
+              avances: asientoData.contenido?.avances_partidas || [],
+              clima: asientoData.contenido?.datos_generales?.condiciones_climaticas || null,
+              temperatura: null,
+              personal: [],
+              equipos: [],
+              materiales: [],
+              ocurrencias: asientoData.contenido?.datos_generales?.observaciones_generales || asientoData.contenido?.ocurrencias?.map(o => o.descripcion).join('; ') || null,
+              consultas: asientoData.contenido?.consultas?.map(c => c.descripcion).join('; ') || null,
+              observaciones: asientoData.resumen || null,
+              adjuntos: []
+            },
+            geolocalizacion_lat: ubicacionActual?.lat || null,
+            geolocalizacion_lng: ubicacionActual?.lng || null
+          }
+
+          console.log('DEBUG: guardarAsiento payload:', JSON.stringify(payload, null, 2))
+
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Usuario-Id': usuario.id.toString()
+            },
+            body: JSON.stringify(payload)
+          })
+
+          if (res.ok) {
+            const nuevoAsiento = await res.json()
+            set(state => ({
+              asientosCuaderno: [...(state.asientosCuaderno || []), nuevoAsiento],
+              asientoBorrador: null
+            }))
+            return nuevoAsiento
+          }
+        } catch (error) {
+          console.error('Error guardando asiento:', error)
+        }
+        throw new Error('No se pudo guardar el asiento')
+      },
+
+      async cerrarAsiento(asientoId) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        const { usuario } = get()
+        try {
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos/${asientoId}/cerrar`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Usuario-Id': usuario.id.toString()
+            }
+          })
+
+          if (res.ok) {
+            const asientoActualizado = await res.json()
+            set(state => ({
+              asientosCuaderno: (state.asientosCuaderno || []).map(a =>
+                a.id === asientoId ? asientoActualizado : a
+              )
+            }))
+            return asientoActualizado
+          }
+        } catch (error) {
+          console.error('Error cerrando asiento:', error)
+        }
+        throw new Error('No se pudo cerrar el asiento')
+      },
+
+      async firmarAsiento(asientoId, pin, observaciones = null) {
+        const erpUrl = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
+        const { usuario } = get()
+        try {
+          const res = await fetch(`${erpUrl}/api/v1/cuaderno/asientos/${asientoId}/firmar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              usuario_id: usuario.id,
+              pin,
+              observaciones
+            })
+          })
+
+          if (res.ok) {
+            const asientoActualizado = await res.json()
+            set(state => ({
+              asientosCuaderno: (state.asientosCuaderno || []).map(a =>
+                a.id === asientoId ? asientoActualizado : a
+              )
+            }))
+            return asientoActualizado
+          }
+        } catch (error) {
+          console.error('Error firmando asiento:', error)
+        }
+        throw new Error('No se pudo firmar el asiento')
+      },
+
+      clearAsientoBorrador() {
+        set({ asientoBorrador: null })
       }
     }),
     {
       name: 'monitor-obra-storage',
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         usuario: state.usuario,
         avances: state.avances,
         pendienteSync: state.pendienteSync,
         comisariaSeleccionada: state.comisariaSeleccionada,
         loginUbicacion: state.loginUbicacion,
+        partidasCache: state.partidasCache,
+        asientosCuaderno: state.asientosCuaderno,
+        asientoBorrador: state.asientoBorrador,
       }),
+      onRehydrateStorage: () => (state) => {
+        // NO cargar datos iniciales - empezar completamente vacío
+        if (state && (!state.avances || state.avances.length === 0)) {
+          state.avances = [] // Array vacío, sin datos de prueba
+        }
+        // NO pre-cargar partidas - se cargarán del API cuando sea necesario
+        if (state && (!state.partidasCache || Object.keys(state.partidasCache).length === 0)) {
+          state.partidasCache = {}
+        }
+      },
     }
   )
 )

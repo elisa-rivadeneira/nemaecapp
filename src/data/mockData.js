@@ -14,15 +14,15 @@ export const COMISARIAS = [
 ]
 
 export const USUARIOS = [
-  // Monitores de obra
-  { id: 1, nombre: 'Nivardo Quispe', login: 'nquispe', dni: '45678901', rol: 'monitor', comisariasAsignadas: ['ENS', 'CAR'] },
-  { id: 2, nombre: 'Rosa Mamani', login: 'rmamani', dni: '52341678', rol: 'monitor', comisariasAsignadas: ['SMP', 'VES'] },
-  { id: 3, nombre: 'Carlos Flores', login: 'cflores', dni: '39821456', rol: 'monitor', comisariasAsignadas: ['SCA', 'ENS'] },
-  { id: 4, nombre: 'Ana Torres', login: 'atorres', dni: '61234567', rol: 'monitor', comisariasAsignadas: ['CAR', 'SMP', 'VES'] },
-  // Residentes de obra
-  { id: 5, nombre: 'Roberto Pérez', login: 'rperez', dni: '72345678', rol: 'residente', comisariasAsignadas: ['ENS', 'CAR'] },
-  { id: 6, nombre: 'María Santos', login: 'msantos', dni: '83456789', rol: 'residente', comisariasAsignadas: ['SMP', 'VES'] },
-  { id: 7, nombre: 'Luis Guerrero', login: 'lguerrero', dni: '94567890', rol: 'residente', comisariasAsignadas: ['SCA', 'ENS'] },
+  // Monitores de obra - credenciales reales de la BD
+  { id: 1, nombre: 'Luis Callupe', login: 'lcallupe', dni: '123456', rol: 'monitor', comisariasAsignadas: ['ENS', 'CAR'] },
+  { id: 2, nombre: 'Nivardo Quispe', login: 'nquispe', dni: '123456', rol: 'monitor', comisariasAsignadas: ['ENS', 'CAR'] },
+  { id: 3, nombre: 'Marlenne Bustamante', login: 'mbustamante', dni: '123456', rol: 'monitor', comisariasAsignadas: ['SCA', 'ENS'] },
+  { id: 4, nombre: 'Rosemary Valdivia', login: 'rvaldivia', dni: '123456', rol: 'monitor', comisariasAsignadas: ['CAR', 'SMP', 'VES'] },
+  { id: 5, nombre: 'Sandy Arbieto', login: 'sarbieto', dni: '123456', rol: 'monitor', comisariasAsignadas: ['SMP', 'VES'] },
+  // Residentes de obra - credenciales reales de la BD
+  { id: 6, nombre: 'Gerardo Rodriguez', login: 'grodriguez', dni: '123465', rol: 'residente', comisariasAsignadas: ['ENS', 'CAR'] },
+  { id: 7, nombre: 'Cesar Vera', login: 'cvera', dni: '123456', rol: 'residente', comisariasAsignadas: ['SCA', 'ENS'] },
 ]
 
 // Alias de compatibilidad

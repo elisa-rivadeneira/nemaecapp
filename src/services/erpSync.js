@@ -6,11 +6,25 @@
 
 const ERP_URL = import.meta.env.VITE_ERP_URL || 'http://localhost:8000'
 
+// Mapeo de códigos de comisaría a IDs del ERP
+const COMISARIA_ID_MAP = {
+  'ENS': 67, // Ensenada
+  'CAR': 63, // Carabayllo
+  'SCA': 74, // San Cayetano
+  'SMP': 999, // San Martin de Porres (ID temporal, actualizar con el correcto)
+  'VES': 998, // Villa el Salvador (ID temporal, actualizar con el correcto)
+}
+
 function mapAvanceToERP(avance) {
+  // Convertir código de comisaría a ID numérico
+  const comisariaId = COMISARIA_ID_MAP[avance.comisariaId] || parseInt(avance.comisariaId) || 0
+  // Mantener el código original (ENS, CAR, etc.)
+  const comisariaCodigo = avance.comisariaId
+
   return {
     app_id: avance.id,
-    comisaria_id: avance.comisariaId,
-    comisaria_codigo: String(avance.comisariaId),
+    comisaria_id: comisariaId,
+    comisaria_codigo: comisariaCodigo,
     codigo_partida: avance.codigo,
     fecha: avance.fecha,
     hora: avance.hora || null,
