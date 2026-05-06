@@ -395,19 +395,19 @@ export default function AsientoDetallePage() {
             <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
               <div>
                 <p className="text-xs text-gray-500 font-medium">Condiciones climáticas</p>
-                <p className="text-sm text-gray-900">{asiento.contenido.datos_generales.condiciones_climaticas}</p>
+                <p className="text-sm text-gray-900">{asiento.contenido?.datos_generales?.condiciones_climaticas || 'No especificado'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Personal presente</p>
-                <p className="text-sm text-gray-900">{asiento.contenido.datos_generales.personal_presente} personas</p>
+                <p className="text-sm text-gray-900">{asiento.contenido?.datos_generales?.personal_presente || 0} personas</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Equipos operando</p>
-                <p className="text-sm text-gray-900">{asiento.contenido.datos_generales.equipos_operando}</p>
+                <p className="text-sm text-gray-900">{asiento.contenido?.datos_generales?.equipos_operando || 'No especificado'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Observaciones generales</p>
-                <p className="text-sm text-gray-900">{asiento.contenido.datos_generales.observaciones_generales}</p>
+                <p className="text-sm text-gray-900">{asiento.contenido?.datos_generales?.observaciones_generales || 'Sin observaciones'}</p>
               </div>
             </div>
           )}
@@ -423,7 +423,7 @@ export default function AsientoDetallePage() {
               <CheckCircle size={20} className="text-green-600" />
               <span className="font-medium text-gray-900">Avances de Partidas</span>
               <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                {asiento.contenido.avances_partidas.length} partidas
+                {asiento.contenido?.avances_partidas?.length || 0} partidas
               </span>
             </div>
             <ChevronLeft
@@ -435,7 +435,7 @@ export default function AsientoDetallePage() {
           </button>
           {expandedSection === 'avances' && (
             <div className="px-4 pb-4 space-y-4 border-t border-gray-100">
-              {asiento.contenido.avances_partidas.map((partida, index) => (
+              {(asiento.contenido?.avances_partidas || []).map((partida, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-3">
                   <p className="font-medium text-sm text-gray-900 mb-1">{partida.partida_nombre}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
@@ -476,7 +476,7 @@ export default function AsientoDetallePage() {
                 <AlertTriangle size={20} className="text-orange-600" />
                 <span className="font-medium text-gray-900">Ocurrencias</span>
                 <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                  {asiento.contenido.ocurrencias.length}
+                  {asiento.contenido?.ocurrencias?.length || 0}
                 </span>
               </div>
               <ChevronLeft
@@ -488,7 +488,7 @@ export default function AsientoDetallePage() {
             </button>
             {expandedSection === 'ocurrencias' && (
               <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
-                {asiento.contenido.ocurrencias.map((ocurrencia, index) => (
+                {(asiento.contenido?.ocurrencias || []).map((ocurrencia, index) => (
                   <div key={index} className="bg-orange-50 rounded-lg p-3">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs bg-orange-200 text-orange-800 px-2 py-0.5 rounded-full font-medium">
@@ -515,7 +515,7 @@ export default function AsientoDetallePage() {
                 <Users size={20} className="text-blue-600" />
                 <span className="font-medium text-gray-900">Consultas</span>
                 <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                  {asiento.contenido.consultas.length}
+                  {asiento.contenido?.consultas?.length || 0}
                 </span>
               </div>
               <ChevronLeft
@@ -527,7 +527,7 @@ export default function AsientoDetallePage() {
             </button>
             {expandedSection === 'consultas' && (
               <div className="px-4 pb-4 space-y-3 border-t border-gray-100">
-                {asiento.contenido.consultas.map((consulta, index) => (
+                {(asiento.contenido?.consultas || []).map((consulta, index) => (
                   <div key={index} className="bg-blue-50 rounded-lg p-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-xs text-blue-600 font-medium">Para: {consulta.dirigido_a}</span>
