@@ -122,7 +122,7 @@ export const useAppStore = create(
         set({ comisariaSeleccionada: comisariaId, comisariaSeleccionadaObj: comisariaObj })
       },
 
-      registrarAvance({ comisariaId, codigo, porcentajeDia, observaciones, foto, lat, lng }) {
+      registrarAvance({ comisariaId, codigo, porcentajeDia, observaciones, fotos, lat, lng }) {
         const { avances, usuario, isOnline } = get()
         const registrosAnteriores = avances.filter(
           a => a.comisariaId === comisariaId && a.codigo === codigo
@@ -144,7 +144,7 @@ export const useAppStore = create(
           monitor: usuario?.login,
           rolRegistrador: usuario?.rol || 'monitor',
           obs: observaciones,
-          foto: foto || null,
+          fotos: fotos || [],
           // Verificación: residentes quedan pendientes, monitores ya están verificados
           verificado: !esResidente,
           monitorVerificador: null,
@@ -152,7 +152,7 @@ export const useAppStore = create(
           porcentajeDiaMonitor: null,
           acumuladoMonitor: null,
           obsMonitor: null,
-          fotoMonitor: null,
+          fotosMonitor: null,
           fechaVerificacion: null,
           lat,
           lng,
@@ -168,6 +168,45 @@ export const useAppStore = create(
         if (!esResidente && isOnline) sincronizarAvanceERP(nuevo)
 
         return nuevo
+      },
+
+      editarAvance(avanceId, datosActualizados) {
+        const { avances, usuario, isOnline } = get()
+        const avance = avances.find(a => a.id === avanceId)
+        if (!avance) return false
+
+        // Recalcular acumulado si cambió el porcentaje
+        let nuevoAcumulado = avance.acumulado
+        if (datosActualizados.porcentajeDia !== undefined && datosActualizados.porcentajeDia !== avance.porcentajeDia) {
+          const anteriores = avances.filter(
+            a => a.comisariaId === avance.comisariaId && a.codigo === avance.codigo && a.id < avanceId
+          )
+          const acumuladoAnterior = anteriores.length > 0 ? anteriores[anteriores.length - 1].acumulado : 0
+          nuevoAcumulado = Math.min(acumuladoAnterior + datosActualizados.porcentajeDia, 100)
+        }
+
+        const avanceEditado = {
+          ...avance,
+          porcentajeDia: datosActualizados.porcentajeDia || avance.porcentajeDia,
+          acumulado: nuevoAcumulado,
+          obs: datosActualizados.observaciones !== undefined ? datosActualizados.observaciones : avance.obs,
+          fotos: datosActualizados.fotos !== undefined ? datosActualizados.fotos : (avance.fotos || avance.foto ? [avance.foto].filter(Boolean) : []),
+          lat: datosActualizados.lat || avance.lat,
+          lng: datosActualizados.lng || avance.lng,
+          editadoPor: usuario?.login,
+          fechaEdicion: new Date().toISOString(),
+          sincronizado: false
+        }
+
+        set(state => ({
+          avances: state.avances.map(a => a.id !== avanceId ? a : avanceEditado),
+          pendienteSync: isOnline ? state.pendienteSync : [...state.pendienteSync, avanceId]
+        }))
+
+        // Sincronizar si está online
+        if (isOnline) sincronizarAvanceERP(avanceEditado)
+
+        return true
       },
 
       verificarAvance(avanceId, { acuerdoConAvance, porcentajeDiaMonitor, obsMonitor, fotoMonitor }) {

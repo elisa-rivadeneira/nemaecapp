@@ -23,6 +23,12 @@ export const USUARIOS = [
   // Residentes de obra - credenciales reales de la BD
   { id: 6, nombre: 'Gerardo Rodriguez', login: 'grodriguez', dni: '123465', rol: 'residente', comisariasAsignadas: ['ENS', 'CAR'] },
   { id: 7, nombre: 'Cesar Vera', login: 'cvera', dni: '123456', rol: 'residente', comisariasAsignadas: ['SCA', 'ENS'] },
+  // Comisarios - nuevos usuarios
+  { id: 8, nombre: 'Mayor Juan Rojas', login: 'jrojas', dni: '123457', rol: 'comisario', comisariasAsignadas: ['ENS'] },
+  { id: 9, nombre: 'Capitán María Silva', login: 'msilva', dni: '123458', rol: 'comisario', comisariasAsignadas: ['CAR'] },
+  { id: 10, nombre: 'Mayor Carlos Pérez', login: 'cperez', dni: '123459', rol: 'comisario', comisariasAsignadas: ['SMP'] },
+  // Coordinador NEMAEC
+  { id: 11, nombre: 'Ing. Ana Gutierrez', login: 'agutierrez', dni: '123460', rol: 'coordinador', comisariasAsignadas: ['ENS', 'CAR', 'SMP', 'VES', 'SCA'] },
 ]
 
 // Alias de compatibilidad

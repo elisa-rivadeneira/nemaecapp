@@ -6,11 +6,14 @@ import ComisariaModulosPage from './pages/ComisariaModulosPage'
 import PartidasPage from './pages/PartidasPage'
 import RegistrarAvancePage from './pages/RegistrarAvancePage'
 import VerificarAvancePage from './pages/VerificarAvancePage'
+import HistorialAvancesPage from './pages/HistorialAvancesPage'
+import EditarAvancePage from './pages/EditarAvancePage'
 import DashboardPage from './pages/DashboardPage'
 import CuadernoListPage from './pages/CuadernoListPage'
 import AsientoNuevoPage from './pages/AsientoNuevoPage'
 import AsientoDetallePage from './pages/AsientoDetallePage'
 import InformesPage from './pages/InformesPage'
+import ValidacionesComisarioPage from './pages/ValidacionesComisarioPage'
 
 function RequireAuth({ children }) {
   const usuario = useAppStore(s => s.usuario)
@@ -33,6 +36,9 @@ export default function App() {
         <Route path="/comisaria/modulos" element={<RequireAuth><RequireComisaria><ComisariaModulosPage /></RequireComisaria></RequireAuth>} />
         <Route path="/dashboard" element={<RequireAuth><DashboardPage /></RequireAuth>} />
         <Route path="/partidas" element={<RequireAuth><RequireComisaria><PartidasPage /></RequireComisaria></RequireAuth>} />
+        <Route path="/partidas/registrar" element={<RequireAuth><RequireComisaria><RegistrarAvancePage /></RequireComisaria></RequireAuth>} />
+        <Route path="/partidas/historial" element={<RequireAuth><RequireComisaria><HistorialAvancesPage /></RequireComisaria></RequireAuth>} />
+        <Route path="/partidas/editar" element={<RequireAuth><RequireComisaria><EditarAvancePage /></RequireComisaria></RequireAuth>} />
         <Route path="/registrar" element={<RequireAuth><RequireComisaria><RegistrarAvancePage /></RequireComisaria></RequireAuth>} />
         <Route path="/verificar" element={<RequireAuth><RequireComisaria><VerificarAvancePage /></RequireComisaria></RequireAuth>} />
 
@@ -44,6 +50,9 @@ export default function App() {
 
         {/* Ruta de Informes */}
         <Route path="/informes" element={<RequireAuth><RequireComisaria><InformesPage /></RequireComisaria></RequireAuth>} />
+
+        {/* Ruta de Validaciones del Comisario */}
+        <Route path="/validaciones-comisario" element={<RequireAuth><RequireComisaria><ValidacionesComisarioPage /></RequireComisaria></RequireAuth>} />
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

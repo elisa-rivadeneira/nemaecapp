@@ -229,10 +229,14 @@ export default function LoginPage() {
         {/* Demo hint */}
         {!cargando && !mostrarModalGps && (
           <div className="mt-4 bg-white/10 rounded-xl p-3 text-blue-100 text-xs space-y-1">
-            <p className="font-semibold text-white text-xs">Monitores de obra:</p>
-            <p>lcallupe / 123456 · nquispe / 123456 · mbustamante / 123456</p>
-            <p className="font-semibold text-white text-xs pt-1">Residentes de obra:</p>
+            <p className="font-semibold text-white text-xs">Monitores:</p>
+            <p>lcallupe / 123456 · nquispe / 123456</p>
+            <p className="font-semibold text-white text-xs pt-1">Residentes:</p>
             <p>grodriguez / 123465 · cvera / 123456</p>
+            <p className="font-semibold text-white text-xs pt-1">Comisarios:</p>
+            <p>jrojas / 123457 · msilva / 123458</p>
+            <p className="font-semibold text-white text-xs pt-1">Coordinador:</p>
+            <p>agutierrez / 123460</p>
 
             {/* DEBUG: Botón para saltar GPS */}
             <button

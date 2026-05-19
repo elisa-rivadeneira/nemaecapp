@@ -4,7 +4,7 @@ import { useAppStore } from '../store/appStore'
 import { calcularProgramadoHoy, getEstadoSemaforo } from '../data/mockData'
 import ProgressBar from '../components/ProgressBar'
 import OfflineBanner from '../components/OfflineBanner'
-import { Search, ArrowLeft, CheckCircle2, Clock, AlertTriangle, XCircle, ShieldCheck, ClipboardList } from 'lucide-react'
+import { Search, ArrowLeft, CheckCircle2, Clock, AlertTriangle, XCircle, ShieldCheck, ClipboardList, History } from 'lucide-react'
 
 const FILTROS = [
   { key: 'todos', label: 'Todos' },
@@ -170,15 +170,26 @@ export default function PartidasPage() {
                     </button>
                   )}
 
-                  {/* Botón registrar — para todos */}
-                  <button
-                    onClick={() => handleRegistrar(partida)}
-                    disabled={avance >= 100}
-                    className="w-full bg-brand-700 text-white py-2.5 rounded-xl text-sm font-semibold active:bg-brand-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ClipboardList size={16} />
-                    {avance >= 100 ? '✓ Completada' : 'Registrar avance del día'}
-                  </button>
+                  <div className="flex gap-2">
+                    {/* Botón historial */}
+                    <button
+                      onClick={() => navigate('/partidas/historial', { state: { partida } })}
+                      className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold active:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <History size={16} />
+                      Ver historial
+                    </button>
+
+                    {/* Botón registrar — para todos */}
+                    <button
+                      onClick={() => handleRegistrar(partida)}
+                      disabled={avance >= 100}
+                      className="flex-1 bg-brand-700 text-white py-2.5 rounded-xl text-sm font-semibold active:bg-brand-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                    >
+                      <ClipboardList size={16} />
+                      {avance >= 100 ? 'Completada' : 'Registrar'}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

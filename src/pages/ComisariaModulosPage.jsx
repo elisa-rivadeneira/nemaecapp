@@ -12,7 +12,9 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Shield,
+  BarChart3
 } from 'lucide-react'
 import OfflineBanner from '../components/OfflineBanner'
 
@@ -83,34 +85,94 @@ export default function ComisariaModulosPage() {
         </p>
 
         <div className="space-y-3">
-          {/* Card Avances - Existente */}
-          <button
-            onClick={() => navigate('/partidas')}
-            className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-colors"
-          >
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                <ClipboardList className="text-blue-700" size={24} />
-              </div>
-              <div className="flex-1 text-left">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-semibold text-gray-900">Avances</h3>
-                  <ArrowRight size={18} className="text-gray-400" />
+          {/* Card Avances - Para Monitor y Residente */}
+          {(usuario?.rol === 'monitor' || usuario?.rol === 'residente') && (
+            <button
+              onClick={() => navigate('/partidas')}
+              className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <ClipboardList className="text-blue-700" size={24} />
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {resumen.totalPartidas} partidas
-                </p>
-                <div className="flex gap-2 mt-2">
-                  <span className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
-                    {resumen.completadas} completadas
-                  </span>
-                  <span className="text-[10px] text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
-                    {resumen.enCurso} en curso
-                  </span>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">
+                      {usuario?.rol === 'residente' ? 'Registrar Avances' : 'Validar Avances'}
+                    </h3>
+                    <ArrowRight size={18} className="text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {resumen.totalPartidas} partidas
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                      {resumen.completadas} completadas
+                    </span>
+                    <span className="text-[10px] text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full">
+                      {resumen.enCurso} en curso
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </button>
+            </button>
+          )}
+
+          {/* Card Validaciones - Para Comisario */}
+          {usuario?.rol === 'comisario' && (
+            <button
+              onClick={() => navigate('/validaciones-comisario')}
+              className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                  <Shield className="text-green-700" size={24} />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Validaciones Pendientes</h3>
+                    <ArrowRight size={18} className="text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Partidas completadas al 100%
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-[10px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
+                      3 pendientes
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          )}
+
+          {/* Card Dashboard - Para Coordinador */}
+          {usuario?.rol === 'coordinador' && (
+            <button
+              onClick={() => window.open('http://localhost:3000/dashboard-coordinador', '_blank')}
+              className="w-full bg-white rounded-2xl shadow-sm border border-gray-100 p-4 active:bg-gray-50 transition-colors"
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <BarChart3 className="text-purple-700" size={24} />
+                </div>
+                <div className="flex-1 text-left">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Dashboard Ejecutivo</h3>
+                    <ArrowRight size={18} className="text-gray-400" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Vista nacional en tiempo real
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="text-[10px] text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">
+                      132 comisarías
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </button>
+          )}
 
           {/* Card Cuaderno de Obra - NUEVO */}
           <button
